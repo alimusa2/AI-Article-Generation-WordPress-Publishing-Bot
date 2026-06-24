@@ -1,0 +1,1027 @@
+{
+  "name": "article genertion",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -384,
+        368
+      ],
+      "id": "4e83f476-7cc4-435e-944b-92ee0287330b",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "url": "https://serpapi.com/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $json.keyword }}"
+            },
+            {
+              "name": "num",
+              "value": "5"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -608,
+        368
+      ],
+      "id": "508ec454-981f-4d22-8e24-5bcd90e3d514",
+      "name": "search for competitors",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "vh88OXg6c1ESSLds",
+          "name": "Query Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.organic_results[0].link }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -160,
+        368
+      ],
+      "id": "2adaf372-9874-4282-b379-3865e878e27d",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "title",
+              "cssSelector": "title",
+              "returnValue": "html"
+            },
+            {
+              "key": "h1",
+              "cssSelector": "h1"
+            },
+            {
+              "key": "h2",
+              "cssSelector": "h2"
+            },
+            {
+              "key": "meta_descriptio",
+              "cssSelector": "meta[name='description']",
+              "returnValue": "attribute",
+              "attribute": "content"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        128,
+        368
+      ],
+      "id": "909c5621-ab90-42cf-aa48-b4a860fd0b5d",
+      "name": "HTML"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        496,
+        592
+      ],
+      "id": "ec474420-5d69-47ca-90ff-51e09e8274e8",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "uo1vuJfOF7o68VLj",
+          "name": "Groq account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1_-cREnbLYhRg7yqnJlBOOvtuyapO3ivRDtbSD6gjJ-c",
+          "mode": "list",
+          "cachedResultName": "keywords",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_-cREnbLYhRg7yqnJlBOOvtuyapO3ivRDtbSD6gjJ-c/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2012306371,
+          "mode": "list",
+          "cachedResultName": "analysis",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_-cREnbLYhRg7yqnJlBOOvtuyapO3ivRDtbSD6gjJ-c/edit#gid=2012306371"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "url": "={{ $('Loop Over Items').item.json.organic_results[0].link }}",
+            "title": "={{ $('HTML').item.json.title }}",
+            "h1": "={{ $('HTML').item.json.h1 }}",
+            "h2": "={{ $('HTML').item.json.h2 }}",
+            "analysis": "={{ $json.text }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "h1",
+              "displayName": "h1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "h2",
+              "displayName": "h2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "analysis",
+              "displayName": "analysis",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        832,
+        368
+      ],
+      "id": "e330f111-e2dd-4325-bbb4-6f7dc7542d46",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rjT0Y5eNo93uDr64",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        496
+      ],
+      "id": "dd73b7dd-b2f9-4408-8c3f-c73f37d28540",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "json",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -336,
+        96
+      ],
+      "id": "479eaf80-5dfc-4530-a323-c0cf36af4425",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert SEO strategist and content planner who specializes in analyzing competitor content and creating winning strategies for ranking #1 on Google.\n\nAnalyze ALL competitor insights below and build a superior content strategy.\n\nCOMPETITOR ANALYSIS DATA:\n[Insert your competitor JSON data here]\n\nTARGET KEYWORD:\n[Insert your target keyword here]\n\n**INSTRUCTIONS FOR STRATEGY CREATION:**\nThe competitor content provided is likely superficial (like my draft PDF). It lacks specific data, actionable advice, and clear explanations. Your strategy must fix this. Do not just summarize what competitors did. Find the gaps.\n\nYour task is to design a winning content strategy that clearly outperforms competitors.\n\nFocus on:\n- **Identifying gaps:** What questions are left unanswered?\n- **Adding missing subtopics:** What related concepts are ignored? (e.g., \"circular economy,\" \"lifecycle emissions\").\n- **Improving structure and clarity:** Ensure a logical flow from problem to solution.\n- **Increasing topical depth:** Go beyond \"saves energy\" to explain \"how\" and \"how much.\"\n- **Satisfying full search intent:** Does the user want to buy, compare, or just learn? We must do all three.\n\nCreate a strategy with the following sections.\n\n1️⃣ MAIN_ANGLE\nDefine the unique positioning for the article.\nExplain how the content will be different and better than competitor pages.\nHighlight missing angles or weaknesses in competitor content. Be specific.\n\n2️⃣ ARTICLE_OUTLINE\nCreate a complete SEO article outline using H2 and H3 headings.\nThe outline must:\n- Cover beginner to advanced information\n- Fill competitor content gaps (include sections for definitions, technical explanations, cost analysis, and verification of claims)\n- Follow a logical flow (Problem -> Solutions -> Deep Dive -> Buyer Guide -> Maintenance)\n- Include actionable sections (e.g., \"How to Verify Green Claims,\" \"Installation Tips\")\n- Be suitable for a 2000+ word article\n\nUse this format:\nH2: Section Title\nH3: Subtopic\n\n3️⃣ FAQS\nGenerate 5–7 high-value FAQs that:\n- Competitors did not cover well (avoid generic questions)\n- Match real user search intent (think about objections or advanced queries)\n- Could appear in Google's \"People Also Ask\"\n\n4️⃣ TARGET_WORD_COUNT\nRecommend an ideal article length based on competitor depth and the complexity of the topic.\n\n5️⃣ KEY_DATA_POINTS\nList important statistics, facts, research data, or numbers that should be included in the article to increase authority. (e.g., \"The average US household spends $2,000 on energy annually,\" \"LEDs use 75% less energy than incandescent bulbs.\")\n\nOUTPUT FORMAT:\n\nmain_angle:\n(text)\n\noutline:\n(text outline with H2/H3)\n\nfaqs:\n- question\n- question\n- question\n\nword_count:\n(number)\n\nkey_points:\n- point\n- point\n- point\n\nReturn the result as structured plain text only.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are an expert SEO strategist and content planner with 15 years of experience. Your specialty is analyzing competitor content to identify gaps in topical depth, search intent, and structure. You create comprehensive content strategies designed to rank #1 on Google.  Your output must be data-driven, specific, and actionable. You avoid fluff and generalities. You prioritize: 1.  **Depth:** You ensure topics are covered from beginner to expert level. 2.  **Uniqueness:** You identify what competitors missed and build a strategy to dominate those areas. 3.  **Intent:** You match the content to the user's stage in the buying journey (Informational, Commercial Investigation, Transactional). 4.  **Authority:** You insist on including specific statistics, data points, and verifiable facts."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -176,
+        -16
+      ],
+      "id": "5ebc63b3-cc78-40ef-8881-d8fedf882378",
+      "name": "winning strategy",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Write a complete SEO-optimized article using the following inputs.\n\nMAIN KEYWORD:\n{{ $('On form submission').item.json.keyword }}\n\nCONTENT STRATEGY (Angle, Outline, Competitor Gaps, FAQs, Key Data Points):\n{{ $json.text }}\n\nIMAGES:\nThe article will include 4 images. You must insert the image placeholders exactly where specified below. Do NOT move them to the end. Do NOT group them together. Do NOT ignore them.\n\n- [IMAGE:1] - Place this EXACT text near the introduction, right after the first few paragraphs.\n- [IMAGE:2] - Place this EXACT text in the middle of the article, immediately after a major H2 heading.\n- [IMAGE:3] - Place this EXACT text in a section that contains bullet points or a list.\n- [IMAGE:4] - Place this EXACT text near the Final Thoughts section, either just before or just after it.\n\nCRITICAL IMAGE RULE:\nThe image placeholders MUST remain exactly where you put them in the HTML flow. For example, the HTML should look like:\n<p>Some text...</p>\n<p>[IMAGE:1 - description here]</p>\n<p>More text...</p>\nDo NOT collect all image placeholders at the bottom of the article.\n\nCONTENT REQUIREMENTS:\n\n1. General Guidelines:\n   Write a complete informational article, minimum 2000 words.\n   Output must be in clean HTML format only. No markdown, no plain text, no code fences.\n   Use proper HTML tags: h1, h2, h3, p, ul, ol, li, table, tr, td.\n   Never use markdown syntax like ### for headings. Always use h2 and h3 tags.\n   Include a FAQs section at the end.\n   Insert image placeholders exactly as given in the correct locations throughout the article body.\n   Do not use placeholder text like lorem ipsum. Write complete, meaningful content.\n   Do not use bold tags in headings.\n\n2. Introduction:\n   Start with informational content about the topic.\n   Add awareness content explaining why it matters for readers.\n   End the introduction with a CTA paragraph starting exactly:\n   You will learn in this guide...\n   Use simple wording at grade 4 to 5 level.\n   Make it SEO optimized.\n   Include the main keyword naturally.\n   Immediately after the introduction paragraph, insert [IMAGE:1] on its own line.\n\n3. Headings and Structure:\n   Title should be h1 with the main keyword.\n   Follow the ARTICLE OUTLINE from the content strategy exactly. Use the provided H2 and H3 headings.\n   Use h2 for main sections and h3 for subsections only.\n   Use lists, bullet points, numbered lists, or tables where appropriate.\n   Keep paragraphs short. Maximum 3 lines per paragraph.\n   Include facts, data, and numbers from the KEY DATA POINTS section in at least 3 to 4 places.\n\n4. SEO and Keywords:\n   Main keyword must appear in the title, in at least two H2 headings, and in the body.\n   Use LSI and secondary keywords naturally.\n   Use main keyword exactly 4 times per 1000 words.\n   Avoid keyword stuffing.\n   Match search intent.\n\n5. Writing Style:\n   Use very simple language, short sentences, and easy words.\n   Average sentence length should be 1 to 1.5 lines.\n   Use a clear and helpful tone.\n   Include actionable tips and examples.\n   Explain concepts fully. Define technical terms simply.\n\n6. Image Placement Enforcement:\n   This is critical. You MUST place each image placeholder at a specific, logical point within the content flow.\n   For [IMAGE:2]: Find a major H2 heading about halfway through the article. Place [IMAGE:2] on its own line immediately after that H2 and before the following paragraph.\n   For [IMAGE:3]: Find a section that contains a bulleted or numbered list. Place [IMAGE:3] either right before the list or right after it, whichever flows better.\n   For [IMAGE:4]: Find the Final Thoughts section. Place [IMAGE:4] either immediately before the Final Thoughts heading or immediately after the first paragraph of Final Thoughts.\n   After writing, verify that the four [IMAGE:X] placeholders are scattered throughout the HTML, not all at the bottom.\n\n7. Depth and Completeness:\n   Do not be superficial. For every gadget or feature mentioned, explain:\n   First, how it works with a simple explanation.\n   Second, how much it saves including specific numbers if available.\n   Third, real-world pros and cons.\n   Fill competitor gaps identified in the strategy.\n   Include verification guidance.\n   Address key trade-offs explicitly.\n\n8. Tables and Comparisons:\n   Create at least one comparison table.\n   Ensure tables are properly formatted in HTML with table, tr, and td tags.\n\n9. Final Thoughts:\n   Use Final Thoughts as an h2 heading.\n   Summarize key takeaways.\n   End with an encouraging, forward-looking statement.\n   Place [IMAGE:4] either just before the Final Thoughts h2 or just after the first paragraph of Final Thoughts.\n\n10. FAQs Section:\n    Include all FAQs from the content strategy.\n    Format FAQs with h2 for Frequently Asked Questions. Format each question as h3 followed by p for the answer.\n    Ensure answers are detailed. Use 2 to 4 sentences minimum.\n\nOutput Requirements:\nReturn only the complete HTML-formatted article.\nDo not include any explanations, notes, or text outside the HTML.\nAfter writing the article, double-check that the four image placeholders are distributed throughout the article body and NOT all stacked at the end.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are an expert SEO content writer and senior editor with 15+ years of experience. Your specialty is creating comprehensive, authoritative, and reader-friendly articles that rank #1 on Google.  You have been trained on hundreds of top-ranking articles and understand exactly what Google's algorithms and human readers want.  ---  ## YOUR CORE PRINCIPLES  ### 1. Depth Over Fluff You never write superficial content. Every claim is explained. Every concept is defined. Every recommendation is justified. You assume the reader is intelligent but may be new to the topic.  ### 2. Data-Backed Authority You always include specific statistics, numbers, percentages, and facts. You never use vague phrases like \"saves energy\" without quantifying it (e.g., \"saves up to 30% on electricity bills\").  ### 3. Perfect Structure Your articles follow a logical flow: - Hook → Problem Introduction → Solution Overview → Deep Dive → Comparison → Buyer Guidance → Maintenance → FAQs → Final Thoughts - You use short paragraphs (2-4 sentences max) - You break up text with lists, tables, and image placeholders - You never use bold tags in headings  ### 4. Simple, Clear Language - You write at a 4th-5th grade reading level - Sentences are short (1-1.5 lines max) - You explain technical terms simply (e.g., \"Heat recovery means capturing hot air that would otherwise escape and using it again\") - You are helpful, not condescending  ### 5. SEO Mastery - You naturally include the main keyword 4 times per 1000 words - You use LSI keywords and related terms - You match search intent perfectly (informational, commercial, or transactional) - You never keyword stuff  ### 6. Completeness You leave no question unanswered. If a topic is mentioned, it is fully explained. You anticipate what the reader will wonder next and answer it before they ask.  ---  ## YOUR OUTPUT RULES  1. **HTML Only** – You output clean, properly formatted HTML with `<h1>`, `<h2>`, `<h3>`, `<p>`, `<ul>`, `<ol>`, `<li>`, `<table>`, `<tr>`, `<td>` tags. 2. **No Explanations** – You return only the article HTML. No preambles, no notes, no comments. 3. **Follow Instructions Precisely** – You adhere exactly to the user's content strategy, outline, and requirements. 4. **Image Placeholders** – You insert [IMAGE:1], [IMAGE:2], etc. exactly where specified, with optional descriptive notes in parentheses. 5. **Minimum 2000 Words** – Your articles are comprehensive and never fall short of the required word count.  ---  ## YOUR WRITING PROCESS  When given a topic and strategy, you: 1. Review the main keyword and content strategy thoroughly 2. Follow the provided outline exactly (H2s and H3s) 3. Incorporate all key data points from the strategy 4. Define every technical term the first time it appears 5. Add comparison tables where helpful 6. Write detailed FAQ answers (2-4 sentences each, not one-liners) 7. End with actionable final thoughts 8. Self-check: \"Did I explain the 'how'? Did I include numbers? Is this truly helpful?\"  ---  ## REMEMBER  You are not just writing words. You are building trust, answering questions, and helping readers make informed decisions. Every paragraph must earn its place. Every sentence must add value.  If something feels incomplete, you expand it. If a concept might confuse, you clarify it. If a claim lacks proof, you add data.  Your goal: Create the best article on the internet for this topic.\nYou have a common error: you tend to put all image placeholders at the end of articles. You must consciously avoid this. When you see [IMAGE:X] instructions, you insert them immediately at the specified location in the flow of text, never at the end."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        416,
+        -224
+      ],
+      "id": "767c3092-c1d2-4075-90e4-8a9071d5b416",
+      "name": "write the article",
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        848,
+        176
+      ],
+      "id": "31276e5d-c858-456a-89bb-65f8fa4f7a01",
+      "name": "Groq Chat Model3",
+      "credentials": {
+        "groqApi": {
+          "id": "uo1vuJfOF7o68VLj",
+          "name": "Groq account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=For this article about **{{ $('On form submission').item.json.keyword }}** with title **{{ $('Aggregate').item.json.json[0].title }}**\n\nArticle preview:\n{{ $json.text }}\n\nGenerate SEO metadata in JSON format with the following EXACT specifications:\n\n---\n\n### 1. SEO TITLE\n- **Length:** 50-60 characters (count carefully)\n- **Include:** Main keyword naturally at or near the beginning\n- **Style:** Click-optimized, benefit-driven, or question-based if appropriate\n- **Format:** Title case or sentence case? Use title case (each major word capitalized)\n- **Example:** \"Eco-Friendly Home Gadgets 2026: Save Energy & Money Today\"\n\n### 2. META DESCRIPTION\n- **Length:** 150-160 characters (count carefully)\n- **Include:** Main keyword naturally within first 110 characters\n- **Style:** Compelling, action-oriented, includes a benefit or solves a problem\n- **Content:** Summarize the article's value prop, not just generic text\n- **Avoid:** Duplicating the first paragraph of the article\n\n### 3. URL SLUG\n- **Length:** Under 75 characters\n- **Format:** Lowercase only, hyphens between words, no special characters\n- **Include:** Main keyword\n- **Style:** Clean, readable, removes stop words (a, an, the) where possible\n- **Example:** `eco-friendly-home-gadgets-2026`\n\n### 4. FOCUS KEYPHRASE\n- **Length:** 1-2 words\n- **Content:** The primary keyword for this article\n- **Example:** `eco-friendly gadgets`\n\n### 5. SECONDARY KEYWORDS\n- **Count:** 3-5 related phrases\n- **Content:** LSI keywords, related terms, long-tail variations\n- **Style:** Lowercase, no trailing punctuation\n- **Examples:** `energy efficient home devices`, `smart home sustainability`, `water saving appliances`\n\n---\n\nReturn ONLY valid JSON with exactly these keys: \nseo_title, meta_description, url_slug, focus_keyphrase, secondary_keywords\n\nExample format (do NOT copy these values, use them as format reference only):\n{\n  \"seo_title\": \"Eco-Friendly Home Gadgets 2026: Save Energy & Money Today\",\n  \"meta_description\": \"Discover the best eco-friendly home gadgets of 2026. Save energy, reduce waste, and lower bills with our expert guide to sustainable smart home tech.\",\n  \"url_slug\": \"eco-friendly-home-gadgets-2026\",\n  \"focus_keyphrase\": \"eco-friendly gadgets\",\n  \"secondary_keywords\": [\"energy efficient home devices\", \"smart home sustainability\", \"water saving appliances\", \"green technology 2026\", \"reduce household waste\"]\n}\n\nIMPORTANT: Do NOT include any text before or after the JSON. Return ONLY the JSON object. No markdown, no backticks, no explanations.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are an expert SEO specialist with 12+ years of experience. Your expertise is crafting high-converting, click-optimized metadata that improves search rankings and drives organic traffic.  You understand: - Character limits perfectly (never exceed them) - Keyword placement for maximum SEO impact - User psychology (what makes someone click) - Search intent matching (informational, commercial, transactional)  ---  ## YOUR CORE PRINCIPLES  1. **Precision** – You never exceed character limits. You count carefully. 2. **Click-ability** – Your titles and descriptions make people want to click. 3. **Keyword Optimization** – Primary keyword appears naturally at the beginning of titles and descriptions when possible. 4. **No Duplication** – Meta descriptions are unique, not just copied from the first paragraph. 5. **JSON Perfection** – You output ONLY valid JSON, no explanations, no notes, no extra text.  ---  ## YOUR OUTPUT RULES  - Return ONLY the JSON object - No markdown formatting - No backticks - No text before or after - Strictly follow the required keys - Ensure all strings are properly escaped if needed"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        768,
+        -48
+      ],
+      "id": "524f8166-037c-40c5-a9a9-74b0000ed796",
+      "name": "generate seo meta data"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert SEO competitor analyst.\n\nAnalyze the following competitor page data for the keyword:\n\nTARGET KEYWORD:\n{{ $('On form submission').item.json.keyword }}\n\nCOMPETITOR PAGE DATA\nTitle:\n{{ $json.title }}\n\nMeta Description:\n{{ $json.meta_descriptio }}\n\nH1 Headings:\n{{ $json.h1 }}\n\nH2 Headings:\n{{ $json.h2 }}\n\nYour task is to carefully evaluate the structure and content focus of this competitor page.\n\nFocus especially on:\n- topic coverage\n- search intent satisfaction\n- content depth\n- missing sections\n- weak or incomplete explanations\n\nProvide the analysis in the following sections.\n\ncovered_topics:\nList the main topics or subtopics the competitor is covering well based on their headings and metadata.\n\nmissing_gaps:\nIdentify the most important information, sections, or user questions that are missing or poorly covered.  \nFocus on gaps that could help another article outperform this competitor.\n\nwinning_angle:\nSuggest a stronger and more unique angle that a new article could take to differentiate and rank higher.\n\nunanswered_questions:\nList 3 specific user questions about the keyword that this competitor page does not clearly answer.\n\nOUTPUT RULES:\n- Return the response as structured plain text.\n- Only include the four sections listed above.\n- Do not add extra commentary outside these sections.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are an expert SEO competitor analyst who specializes in analyzing search engine results and identifying content gaps.  Your job is to examine competitor page structure and determine how their content performs for a given keyword.  You analyze: - page titles - meta descriptions - H1 headings - H2 headings  Using this information, you must identify what the competitor is doing well and what they are missing.  ANALYSIS PRINCIPLES  1. TOPIC COVERAGE Identify the main topics and subtopics the competitor is covering based on their headings and metadata.  2. CONTENT GAPS Carefully identify missing sections, weak explanations, or topics that should be covered but are not included.  3. SEARCH INTENT Evaluate whether the competitor fully satisfies user intent or if there are opportunities to provide more helpful information.  4. DIFFERENTIATION Suggest a unique angle that a new article could take to outperform the competitor.  5. USER QUESTIONS Find real user questions related to the keyword that the competitor content does not clearly answer.  OUTPUT RULES  Return the response using ONLY the following structured categories:  covered_topics missing_gaps winning_angle unanswered_questions  Do not include explanations outside these sections. Keep the insights concise, clear, and actionable."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        416,
+        368
+      ],
+      "id": "14cf29a2-c56b-4748-98fc-06977d527108",
+      "name": "competitor gaps"
+    },
+    {
+      "parameters": {
+        "html": "{{ $json.text }}"
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        832,
+        -272
+      ],
+      "id": "de83e44a-8426-43b2-91f4-b0839d6f9a01",
+      "name": "HTML1"
+    },
+    {
+      "parameters": {
+        "formTitle": "keywords search",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "keyword"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        -832,
+        368
+      ],
+      "id": "4d3a1e2a-dc5d-4a03-9d5a-0c4e34f4dd63",
+      "name": "On form submission",
+      "webhookId": "f57e3085-3df4-4951-a627-96da411075e7"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the Pexels response\nconst pexelsData = $input.first().json;\nconst photos = pexelsData.photos || [];\n\nif (!photos || photos.length === 0) {\n  return [{\n    json: {\n      article_with_images: $('write the article').first().json.text,\n      image_urls: [],\n      featured_image_url: null\n    }\n  }];\n}\n\n// Get the original article\nconst article = $('write the article').first().json.text;\n\n// Extract keywords from the article for relevance check\n// Simple approach: take first 5 words (can improve with NLP)\nconst keywords = article\n  .toLowerCase()\n  .match(/\\b\\w+\\b/g)\n  ?.slice(0, 5) || [];\n\n// Filter relevant images\nconst relevantPhotos = photos.filter(photo => {\n  const altText = (photo.alt || '').toLowerCase();\n  return keywords.some(keyword => altText.includes(keyword));\n});\n\n// If no relevant images found, fallback to all\nconst finalPhotos = relevantPhotos.length > 0 ? relevantPhotos : photos;\n\n// Build image HTML and arrays\nlet imageHtml = '';\nconst imageUrls = [];\n\nfinalPhotos.forEach((photo, index) => {\n  const imgUrl = photo.src.large;\n  imageUrls.push(imgUrl);\n  imageHtml += `<img src=\"${imgUrl}\" alt=\"${photo.alt || `Article image ${index+1}`}\" />\\n`;\n});\n\n// Insert images into article\nlet enhancedArticle = article;\nif (article.includes('[IMAGES]')) {\n  enhancedArticle = article.replace('[IMAGES]', imageHtml);\n} else {\n  enhancedArticle = imageHtml + '\\n\\n' + article;\n}\n\n// Return filtered images\nreturn [{\n  json: {\n    article_with_images: enhancedArticle,\n    image_urls: imageUrls,  // Array of filtered URLs\n    image_count: finalPhotos.length,\n    featured_image_url: imageUrls[0] || null,\n    first_image_url: imageUrls[0] || null,\n    second_image_url: imageUrls[1] || null,\n    third_image_url: imageUrls[2] || null\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1216,
+        112
+      ],
+      "id": "1f3cc7df-b7a8-4c03-b215-20860eda435e",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.featured_image_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1360,
+        -32
+      ],
+      "id": "64222cad-8894-4140-8d4a-0087020e5b2d",
+      "name": "image 1"
+    },
+    {
+      "parameters": {
+        "url": "https://api.pexels.com/v1/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "={{ $json.text }}"
+            },
+            {
+              "name": "per_page ",
+              "value": "4"
+            },
+            {
+              "name": "orientation",
+              "value": "landscape"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1152,
+        -32
+      ],
+      "id": "c75ee9f1-73d9-4412-8e76-38720f98bf1d",
+      "name": "image url",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "PIXmqo5GeJVq3xUM",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.image_urls[1] }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1424,
+        176
+      ],
+      "id": "6fe12ad6-fbca-4ffc-9fa5-fa44a667ed18",
+      "name": "image 2"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.image_urls[2] }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1296,
+        352
+      ],
+      "id": "08580918-e6df-43fb-a2d2-f93959aa742b",
+      "name": "image 3"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.third_image_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1088,
+        288
+      ],
+      "id": "2d32c2ed-d370-4edb-96fc-455676ba3255",
+      "name": "image 4",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://www.madxtechnologies.com/wp-json/wp/v2/media",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "wordpressApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Disposition",
+              "value": "attachment; filename=image.jpg"
+            },
+            {
+              "name": "Content-Type",
+              "value": "image/jpeg"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1904,
+        176
+      ],
+      "id": "7929e024-8026-4299-8a5a-7f72a9fac0ed",
+      "name": "media node",
+      "credentials": {
+        "wordpressApi": {
+          "id": "1J1Wm7vYWPhNG4zT",
+          "name": "Wordpress account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ================================================\n// COLLECT UPLOADED IMAGE DATA (from media upload node)\n// ================================================\nconst mediaItems = $input.all();  // all uploaded media items\nconst mediaIds = mediaItems.map(item => item.json.id);\nconst mediaUrls = mediaItems.map(item => item.json.source_url);\n\n// ================================================\n// RETRIEVE ARTICLE AND SEO DATA (using your node names)\n// ================================================\nconst articleNodeName = 'write the article';\nconst seoNodeName    = 'generate SEO meta data';\n\n// Get article content – using .first().json.text as you specified\nconst articleText = $('write the article').first().json.text;\n// Get SEO metadata – also .first().json.text (likely a JSON string)\nconst seoText =  $('generate seo meta data').first().json.text;\n\n\nlet seoMeta;\ntry {\n  seoMeta = JSON.parse(seoText);\n} catch (e) {\n  // If parsing fails, assume it's already an object or fallback\n  seoMeta = seoText;\n}\n\n// ================================================\n// REPLACE IMAGE PLACEHOLDERS WITH WORDPRESS IMAGES\n// ================================================\nlet finalArticle = articleText;\n\nmediaUrls.forEach((url, index) => {\n  const placeholder = `[IMAGE:${index + 1}]`; // e.g., [IMAGE:1], [IMAGE:2], ...\n  const imgTag = `<img src=\"${url}\" class=\"wp-image-${mediaIds[index]}\" alt=\"Article image ${index + 1}\" />`;\n  \n  if (finalArticle.includes(placeholder)) {\n    finalArticle = finalArticle.replace(placeholder, imgTag);\n  } else {\n    // Optional fallback: append at the end if placeholder missing\n    finalArticle += `\\n\\n${imgTag}`;\n  }\n});\n\n// ================================================\n// RETURN SINGLE ITEM FOR WORDPRESS POST NODE\n// ================================================\nreturn [{\n  json: {\n    final_article: finalArticle,\n    featured_image_id: mediaIds[0] || null,\n    title: seoMeta.seo_title || seoMeta.title || 'Article',\n    meta: seoMeta,\n    media_ids: mediaIds,\n    media_urls: mediaUrls\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2096,
+        176
+      ],
+      "id": "0da4a9b0-00be-42ba-83ce-55514030a215",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://www.madxtechnologies.com/wp-json/wp/v2/posts",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "wordpressApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "title",
+              "value": "={{ $json.title }}"
+            },
+            {
+              "name": "content",
+              "value": "={{ $json.final_article }}"
+            },
+            {
+              "name": "featured_image_id",
+              "value": "={{ $json.featured_image_id }}"
+            },
+            {
+              "name": "status",
+              "value": "draft"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2288,
+        176
+      ],
+      "id": "80fcc533-1482-4d67-8894-a29c2809c458",
+      "name": "upload node",
+      "credentials": {
+        "wordpressApi": {
+          "id": "1J1Wm7vYWPhNG4zT",
+          "name": "Wordpress account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "numberInputs": 4
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1696,
+        128
+      ],
+      "id": "a8802f5e-d8b0-4d94-8b9c-07b5f68ecb6d",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "model": "meta-llama/llama-4-maverick",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        384,
+        -16
+      ],
+      "id": "2ca67993-698c-41df-a60f-4a0d7261ad0e",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "75LvzwHWRRpAZLwj",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "meta-llama/llama-4-maverick",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        144
+      ],
+      "id": "30015153-46c8-421c-bcec-b0cf588562c8",
+      "name": "OpenRouter Chat Model1",
+      "credentials": {
+        "openRouterApi": {
+          "id": "75LvzwHWRRpAZLwj",
+          "name": "OpenRouter account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search for competitors": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "competitor gaps",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML": {
+      "main": [
+        [
+          {
+            "node": "competitor gaps",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Operation, do nothing": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "winning strategy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "winning strategy": {
+      "main": [
+        [
+          {
+            "node": "write the article",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "write the article": {
+      "main": [
+        [
+          {
+            "node": "generate seo meta data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTML1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "generate seo meta data",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "competitor gaps": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "search for competitors",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "generate seo meta data": {
+      "main": [
+        [
+          {
+            "node": "image url",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "image 1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "image 2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "image 3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "image 4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "image 1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "image url": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "image 2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "image 3": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "image 4": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "media node": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML1": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "upload node",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "media node",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "write the article",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "winning strategy",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "ce934aac-ee15-4dbc-ba8b-877db0f55893",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "28cef6033420e4cfcaf0720b26bf54ddabbcbf988ce7067c7f502a2dd06d37fa"
+  },
+  "id": "GlF59y5XhIAqSMaC",
+  "tags": []
+}
